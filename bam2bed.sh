@@ -1,12 +1,17 @@
-#make a new output directory
-mkdir -p $2
+#!/bin/bash
 
+#defining the objects to improve readability
+INPUT_BAM = "$1"
+OUTPUT_DIR = "$2"
 
-#access conda, create and activate bam2bed environment
+#create the new output directory
+mkdir -p "$OUTPUT_DIR"
+
+#access conda,
 source $(dirname $(dirname $(which mamba)))/etc/profile.d/conda.sh
 
-conda create -n bam2bed
-
+#create and activate bam2bed environment
+mamba create -n bam2bed -c conda-forge bedtools -y
 conda activate bam2bed
 
 
@@ -25,6 +30,3 @@ echo "$(wc -l < "$2/$(basename "$1" .bam)_chr1.bed") $2/$(basename "$1" .bam)_ch
 
 #print my name
 echo "Jochem van Tol"
-
-#close the environment
-conda deactivate
