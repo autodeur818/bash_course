@@ -1,30 +1,39 @@
 #!/bin/bash
 
-#defining the objects to improve readability
-INPUT_BAM = "$1"
-OUTPUT_DIR = "$2"
+#defining the inputs
+INPUT_BAM="$1"
+OUTPUT_DIR="$2"
 
-#create the new output directory
+BAM_FILENAME=$(basename "$INPUT_BAM")
+BED_FILENAME="${BAM_FILENAME%.bam}.bed"
+CHR_FILTER="${BAM_FILENAME%.bam}_chr1.bed"
+
+echo "Input Bam: $INPUT_BAM"
+echo "Output directory: $OUTPUT_DIR"
+
+#create the directory
 mkdir -p "$OUTPUT_DIR"
+echo "Output directory created"
 
+#create and activate conda environment
 source $(dirname $(dirname $(which mamba)))/etc/profile.d/conda.sh
-
-#create and activate bam2bed environment
-conda create -y -n bam2bed bedtools
+conda create -n bam2bed bedtools
 conda activate bam2bed
+echo "Environment activated successfully."
 
-#convert BAM to bed file and save in output directory
-OUTPUT_FILE=$(basename ${INPUT_BAM}.bam)
-echo $OUTPUT_FILE
-bedtools bamtobed -i "$INPUT_BAM" > "$OUTPUT_DIR/$(basename "$INPUT_BAM" .bam).bed"
+#transform BAM into BED
+bedtools bamtobed -i "$INPUT_BAM" > "$OUTPUT_DIR/$BED_FILENAME"
+echo "transforming bam into bed..."
 
-#filter bed file only for chr1 and save as new bed file
-grep -i -w "chr1" "$OUTPUT_DIR/$OUTPUT_FILE.bed" > "$OUTPUT_DIR/$OUTPUT_FILE""_chr1.bed"
+#filter for chr1
+grep -P  "^Chr1\t" "$OUTPUT_DIR/$BED_FILENAME" > "$OUTPUT_DIR/$CHR_FILTER"
+echo "filtering bed file for chr1..."
 
-#count number of lines in filtered bed file
-#wc -l "$2/$(basename "$1" .bam)_chr1.bed" | awk '{print $1}'  > "$2/bam2bed_number_of_rows.txt"
-wc -l "$OUTPUT_DIR/$OUTPUT_FILE""_chr1.bed" > "$OUTPUT_DIR/bam2bed_number_of_rows.txt"
-echo "Count file:"$OUTPUT_DIR"/bam2bed_number_of_rows.txt"
+#count the number of lines
+wc -l "$OUTPUT_DIR/$CHR_FILTER" > "$OUTPUT_DIR/bam2bed_number_of_rows.txt"
+echo "number of lines is counted..."
 
-#print my name
+#print name
 echo "Jochem van Tol"
+
+
